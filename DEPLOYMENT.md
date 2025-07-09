@@ -1,6 +1,6 @@
-# Deployment Guide
+# Deployment Guide - NO CARD REQUIRED OPTIONS
 
-## 🚀 Option 1: Render.com (Recommended - FREE)
+## 🚀 Option 1: Railway (Recommended - FREE, No Card)
 
 ### Steps:
 1. **Push to GitHub:**
@@ -13,29 +13,48 @@
    git push -u origin main
    ```
 
-2. **Deploy on Render:**
-   - Go to [render.com](https://render.com)
-   - Click "New +" → "Web Service"
-   - Connect your GitHub repo
-   - Use these settings:
-     - **Name:** `cosine-similarity-guide`
-     - **Build Command:** `npm install`
-     - **Start Command:** `npm start`
-     - **Plan:** Free
-
-3. **Done!** Your site will be live at `https://cosine-similarity-guide.onrender.com`
-
----
-
-## 🚀 Option 2: Railway (Alternative - FREE)
-
-### Steps:
-1. **Push to GitHub** (same as above)
 2. **Deploy on Railway:**
    - Go to [railway.app](https://railway.app)
+   - Sign up with GitHub (no card required)
    - Click "Deploy from GitHub"
    - Select your repo
    - Railway auto-detects Node.js and deploys
+   - **500 hours/month FREE**
+
+3. **Done!** Your site will be live at `https://your-app.railway.app`
+
+---
+
+## 🚀 Option 2: Cyclic (100% FREE, No Card)
+
+### Steps:
+1. **Push to GitHub** (same as above)
+2. **Deploy on Cyclic:**
+   - Go to [cyclic.sh](https://cyclic.sh)
+   - Sign up with GitHub (no card required)
+   - Click "Deploy"
+   - Connect your GitHub repo
+   - **Unlimited FREE hosting**
+
+3. **Done!** Your site will be live at `https://your-app.cyclic.app`
+
+---
+
+## 🚀 Option 3: Glitch (FREE, No Card)
+
+### Steps:
+1. **Go to Glitch:**
+   - Visit [glitch.com](https://glitch.com)
+   - Sign up with GitHub (no card required)
+   - Click "New Project" → "Import from GitHub"
+   - Enter your GitHub repo URL
+
+2. **Or upload directly:**
+   - Click "New Project" → "Hello Node"
+   - Delete default files
+   - Upload your files directly
+
+3. **Done!** Your site will be live at `https://your-app.glitch.me`
 
 ---
 

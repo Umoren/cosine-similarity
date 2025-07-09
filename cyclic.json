@@ -1,0 +1,13 @@
+{
+  "name": "cosine-similarity-guide",
+  "version": "1.0.0",
+  "build": {
+    "command": "npm install"
+  },
+  "start": {
+    "command": "npm start"
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
