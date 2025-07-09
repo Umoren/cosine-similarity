@@ -1,5 +1,5 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
@@ -22,6 +22,7 @@ app.post('/generate-pdf', async (req, res) => {
         // Launch browser with production settings
         browser = await puppeteer.launch({
             headless: 'new',
+            executablePath: '/usr/bin/chromium',
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
