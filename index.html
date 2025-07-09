@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosine Similarity: The Complete Guide to Magnitude vs Direction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #ffffff;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20mm;
+            background: white;
+            min-height: 297mm;
+        }
+
+        .download-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            transition: all 0.2s;
+            z-index: 1000;
+            font-size: 14px;
+        }
+
+        .download-button:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+        }
+
+        .cover {
+            text-align: center;
+            padding: 60px 0;
+            border-bottom: 3px solid #2563eb;
+            margin-bottom: 40px;
+        }
+
+        .cover h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .cover .subtitle {
+            font-size: 1.3rem;
+            color: #475569;
+            margin-bottom: 24px;
+            font-weight: 400;
+        }
+
+        .cover .author {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-top: 40px;
+        }
+
+        .author strong {
+            color: #1e293b;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 32px 0 16px 0;
+            border-left: 4px solid #2563eb;
+            padding-left: 16px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #334155;
+            margin: 24px 0 12px 0;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #475569;
+            margin: 16px 0 8px 0;
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: #374151;
+        }
+
+        .mental-model {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            border: 1px solid #cbd5e1;
+        }
+
+        .concept-box {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            border-left: 4px solid #10b981;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .concept-box h4 {
+            color: #047857;
+            margin-bottom: 8px;
+        }
+
+        .warning-box {
+            background: #fef2f2;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 16px 0;
+            border-left: 4px solid #ef4444;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .warning-box h4 {
+            color: #dc2626;
+            margin-bottom: 8px;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .example-card {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .example-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .example-card h5 {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .direction {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .magnitude {
+            color: #dc2626;
+            font-weight: 500;
+        }
+
+        .decision {
+            color: #2563eb;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .formula {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            margin: 16px 0;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .cheat-sheet {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+            border: 2px solid #cbd5e1;
+        }
+
+        .quick-ref {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .ref-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #3b82f6;
+            font-size: 0.9rem;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .section-break {
+            margin: 40px 0;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+
+        .toc {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .toc ul {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .toc li {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .toc li::before {
+            content: "→";
+            color: #3b82f6;
+            font-weight: bold;
+            margin-right: 8px;
+            margin-left: -16px;
+        }
+
+        .stats-box {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #047857;
+        }
+
+        .stats-label {
+            color: #065f46;
+            font-weight: 500;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                max-width: 100%;
+            }
+
+            .download-button {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+
+            .example-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .cover {
+                padding: 40px 0;
+            }
+
+            .cover h1 {
+                font-size: 1.8rem;
+            }
+
+            .cover .subtitle {
+                font-size: 1rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+                margin: 24px 0 12px 0;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            .mental-model,
+            .cheat-sheet {
+                padding: 16px;
+            }
+
+            .concept-box {
+                padding: 16px;
+            }
+
+            .quick-ref {
+                grid-template-columns: 1fr;
+            }
+
+            .formula {
+                font-size: 0.9rem;
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            .cover h1 {
+                font-size: 1.5rem;
+            }
+
+            .cover .subtitle {
+                font-size: 0.9rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .example-card {
+                padding: 12px;
+            }
+
+            .download-button {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+        }
+
+        @media print {
+            .container {
+                max-width: none;
+                padding: 15mm;
+                background: white !important;
+                color: black !important;
+            }
+
+            .download-button {
+                display: none !important;
+            }
+
+            .cover {
+                page-break-after: always;
+            }
+
+            h2 {
+                page-break-after: avoid;
+            }
+
+            .example-card {
+                page-break-inside: avoid;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+        }
+
+        /* PDF-specific styling */
+        .pdf-render .download-button {
+            display: none !important;
+        }
+
+        .pdf-render {
+            background: white !important;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="download-button" onclick="downloadPDF()">📄 Download PDF</button>
+
+    <div class="container" id="content">
+        <!-- Cover Page -->
+        <div class="cover">
+            <h1>Cosine Similarity</h1>
+            <div class="subtitle">The Complete Guide to Magnitude vs Direction</div>
+            <div class="subtitle">150+ Real-World Examples & Decision Framework</div>
+
+            <div class="formula">cos(θ) = (A · B) / (||A|| × ||B||)</div>
+
+            <div class="stats-box">
+                <div class="stats-number">150+</div>
+                <div class="stats-label">Practical Examples</div>
+            </div>
+
+            <div class="author">
+                <strong>Samuel Umoren</strong><br>
+                AI Engineer<br>
+                sammai.bearblog.dev
+            </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h3>Table of Contents</h3>
+            <ul>
+                <li>The Mental Model Framework</li>
+                <li>Decision Tree & Quick Assessment</li>
+                <li>Text & NLP Examples (25 examples)</li>
+                <li>Image & Computer Vision (25 examples)</li>
+                <li>User Behavior & Recommendations (25 examples)</li>
+                <li>Financial & Business Data (25 examples)</li>
+                <li>Audio & Time Series (25 examples)</li>
+                <li>E-commerce & Product Data (25 examples)</li>
+                <li>Quick Reference Cheat Sheet</li>
+                <li>Common Mistakes & How to Avoid Them</li>
+            </ul>
+        </div>
+
+        <div class="page-break"></div>
+
+        <!-- Mental Model -->
+        <h2>The Mental Model Framework</h2>
+
+        <div class="mental-model">
+            <h3>Core Principle</h3>
+            <p>Cosine similarity measures <strong>what type of thing</strong> vectors represent, not <strong>how
+                    much</strong> of that thing they contain.</p>
+
+            <div class="example-grid">
+                <div class="concept-box">
+                    <h4>Direction = "What"</h4>
+                    <ul>
+                        <li>Concept or category</li>
+                        <li>Pattern or relationship</li>
+                        <li>Type or style</li>
+                        <li>Semantic meaning</li>
+                        <li>Qualitative properties</li>
+                    </ul>
+                </div>
+
+                <div class="concept-box">
+                    <h4>Magnitude = "How Much"</h4>
+                    <ul>
+                        <li>Intensity or strength</li>
+                        <li>Frequency or count</li>
+                        <li>Scale or size</li>
+                        <li>Quantitative properties</li>
+                        <li>Absolute values</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h3>The Decision Framework</h3>
+
+        <div class="cheat-sheet">
+            <h4>Quick Assessment Questions</h4>
+            <ol>
+                <li><strong>What are you comparing?</strong> Concepts/patterns (direction) or amounts/intensities
+                    (magnitude)?</li>
+                <li><strong>Does scale matter?</strong> If yes, consider Euclidean distance. If no, use cosine
+                    similarity.</li>
+                <li><strong>Are you looking for conceptual similarity?</strong> Use cosine similarity.</li>
+                <li><strong>Do absolute values matter for your task?</strong> If yes, avoid cosine similarity.</li>
+            </ol>
+        </div>
+
+        <div class="page-break"></div>
+
+        <!-- Text & NLP Examples -->
+        <h2>Text & NLP Examples</h2>
+
+        <div class="example-grid">
+            <div class="example-card">
+                <h5>Document Topic Classification</h5>
+                <p><span class="direction">Direction:</span> Topic/subject matter</p>
+                <p><span class="magnitude">Magnitude:</span> Document length, word frequency</p>
+                <p class="decision">✅ Use Cosine - Topics matter, not length</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Semantic Search</h5>
+                <p><span class="direction">Direction:</span> Meaning and concepts</p>
+                <p><span class="magnitude">Magnitude:</span> Term frequency</p>
+                <p class="decision">✅ Use Cosine - Find similar meanings</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Writing Style Analysis</h5>
+                <p><span class="direction">Direction:</span> Style patterns, voice</p>
+                <p><span class="magnitude">Magnitude:</span> Text length, complexity scores</p>
+                <p class="decision">✅ Use Cosine - Style similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Sentiment Analysis</h5>
+                <p><span class="direction">Direction:</span> Positive/negative sentiment</p>
+                <p><span class="magnitude">Magnitude:</span> Emotional intensity</p>
+                <p class="decision">⚠️ Depends - Usually cosine for sentiment direction</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Spam Detection</h5>
+                <p><span class="direction">Direction:</span> Spam patterns and indicators</p>
+                <p><span class="magnitude">Magnitude:</span> Feature frequencies</p>
+                <p class="decision">✅ Use Cosine - Pattern recognition</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Language Detection</h5>
+                <p><span class="direction">Direction:</span> Language characteristics</p>
+                <p><span class="magnitude">Magnitude:</span> Character frequencies</p>
+                <p class="decision">✅ Use Cosine - Language patterns</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Keyword Density Analysis</h5>
+                <p><span class="direction">Direction:</span> Keyword types and themes</p>
+                <p><span class="magnitude">Magnitude:</span> Actual density percentages</p>
+                <p class="decision">❌ Don't Use - Density values matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Plagiarism Detection</h5>
+                <p><span class="direction">Direction:</span> Content similarity patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Exact word matches</p>
+                <p class="decision">⚠️ Hybrid - Combine with exact matching</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Question-Answer Matching</h5>
+                <p><span class="direction">Direction:</span> Semantic relevance</p>
+                <p><span class="magnitude">Magnitude:</span> Answer length, detail level</p>
+                <p class="decision">✅ Use Cosine - Semantic matching</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Code Comment Similarity</h5>
+                <p><span class="direction">Direction:</span> Purpose and functionality</p>
+                <p><span class="magnitude">Magnitude:</span> Comment length</p>
+                <p class="decision">✅ Use Cosine - Functional similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Translation Quality</h5>
+                <p><span class="direction">Direction:</span> Meaning preservation</p>
+                <p><span class="magnitude">Magnitude:</span> Length differences</p>
+                <p class="decision">✅ Use Cosine - Meaning similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>News Article Clustering</h5>
+                <p><span class="direction">Direction:</span> News topics and events</p>
+                <p><span class="magnitude">Magnitude:</span> Article length</p>
+                <p class="decision">✅ Use Cosine - Topic clustering</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Resume Screening</h5>
+                <p><span class="direction">Direction:</span> Skills and qualifications</p>
+                <p><span class="magnitude">Magnitude:</span> Years of experience</p>
+                <p class="decision">⚠️ Hybrid - Cosine for skills, other metrics for experience</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Social Media Posts</h5>
+                <p><span class="direction">Direction:</span> Topics and themes</p>
+                <p><span class="magnitude">Magnitude:</span> Engagement metrics</p>
+                <p class="decision">✅ Use Cosine - Content similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Legal Document Analysis</h5>
+                <p><span class="direction">Direction:</span> Legal concepts and precedents</p>
+                <p><span class="magnitude">Magnitude:</span> Document complexity</p>
+                <p class="decision">✅ Use Cosine - Legal concept similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Academic Paper Similarity</h5>
+                <p><span class="direction">Direction:</span> Research topics and methodologies</p>
+                <p><span class="magnitude">Magnitude:</span> Citation counts, paper length</p>
+                <p class="decision">✅ Use Cosine - Research similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Email Classification</h5>
+                <p><span class="direction">Direction:</span> Email categories (work, personal, etc.)</p>
+                <p><span class="magnitude">Magnitude:</span> Email length, attachment count</p>
+                <p class="decision">✅ Use Cosine - Category classification</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Chatbot Intent Detection</h5>
+                <p><span class="direction">Direction:</span> User intent and purpose</p>
+                <p><span class="magnitude">Magnitude:</span> Message length, complexity</p>
+                <p class="decision">✅ Use Cosine - Intent similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Text Complexity Scoring</h5>
+                <p><span class="direction">Direction:</span> Complexity patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Actual complexity scores</p>
+                <p class="decision">❌ Don't Use - Scores are meaningful values</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Content Recommendation</h5>
+                <p><span class="direction">Direction:</span> Content topics and themes</p>
+                <p><span class="magnitude">Magnitude:</span> Content popularity, views</p>
+                <p class="decision">✅ Use Cosine - Topic-based recommendations</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Author Attribution</h5>
+                <p><span class="direction">Direction:</span> Writing style and patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Vocabulary size, text length</p>
+                <p class="decision">✅ Use Cosine - Style patterns</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Duplicate Detection</h5>
+                <p><span class="direction">Direction:</span> Content similarity patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Exact character matches</p>
+                <p class="decision">⚠️ Hybrid - Use with exact matching</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Topic Modeling</h5>
+                <p><span class="direction">Direction:</span> Document topics and themes</p>
+                <p><span class="magnitude">Magnitude:</span> Topic weights, importance</p>
+                <p class="decision">✅ Use Cosine - Topic similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Text Summarization</h5>
+                <p><span class="direction">Direction:</span> Key concepts and ideas</p>
+                <p><span class="magnitude">Magnitude:</span> Sentence importance scores</p>
+                <p class="decision">✅ Use Cosine - Concept similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Forum Post Matching</h5>
+                <p><span class="direction">Direction:</span> Discussion topics and themes</p>
+                <p><span class="magnitude">Magnitude:</span> Post length, reply count</p>
+                <p class="decision">✅ Use Cosine - Topic matching</p>
+            </div>
+        </div>
+
+        <div class="section-break"></div>
+
+        <!-- Image & Computer Vision Examples -->
+        <h2>Image & Computer Vision Examples</h2>
+
+        <div class="example-grid">
+            <div class="example-card">
+                <h5>Object Recognition</h5>
+                <p><span class="direction">Direction:</span> Object type and features</p>
+                <p><span class="magnitude">Magnitude:</span> Feature intensity</p>
+                <p class="decision">✅ Use Cosine - Object similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Brightness Comparison</h5>
+                <p><span class="direction">Direction:</span> Image content</p>
+                <p><span class="magnitude">Magnitude:</span> Brightness levels</p>
+                <p class="decision">❌ Don't Use - Brightness is magnitude</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Color Palette Matching</h5>
+                <p><span class="direction">Direction:</span> Color relationships</p>
+                <p><span class="magnitude">Magnitude:</span> Color saturation</p>
+                <p class="decision">⚠️ Depends - Usually cosine for color harmony</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Face Recognition</h5>
+                <p><span class="direction">Direction:</span> Facial features and structure</p>
+                <p><span class="magnitude">Magnitude:</span> Feature prominence</p>
+                <p class="decision">✅ Use Cosine - Identity recognition</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Style Transfer</h5>
+                <p><span class="direction">Direction:</span> Artistic style patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Style intensity</p>
+                <p class="decision">✅ Use Cosine - Style similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Image Classification</h5>
+                <p><span class="direction">Direction:</span> Object categories</p>
+                <p><span class="magnitude">Magnitude:</span> Feature strengths</p>
+                <p class="decision">✅ Use Cosine - Category similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Texture Analysis</h5>
+                <p><span class="direction">Direction:</span> Texture patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Pattern intensity</p>
+                <p class="decision">✅ Use Cosine - Pattern matching</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Image Resolution Comparison</h5>
+                <p><span class="direction">Direction:</span> Image content</p>
+                <p><span class="magnitude">Magnitude:</span> Pixel density, resolution</p>
+                <p class="decision">❌ Don't Use - Resolution matters</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Scene Recognition</h5>
+                <p><span class="direction">Direction:</span> Scene types and elements</p>
+                <p><span class="magnitude">Magnitude:</span> Element prominence</p>
+                <p class="decision">✅ Use Cosine - Scene similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Medical Image Analysis</h5>
+                <p><span class="direction">Direction:</span> Anatomical features</p>
+                <p><span class="magnitude">Magnitude:</span> Feature sizes, intensities</p>
+                <p class="decision">⚠️ Depends - Consider clinical significance</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Artistic Style Detection</h5>
+                <p><span class="direction">Direction:</span> Art movement, style</p>
+                <p><span class="magnitude">Magnitude:</span> Brush stroke intensity</p>
+                <p class="decision">✅ Use Cosine - Style classification</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Image Deduplication</h5>
+                <p><span class="direction">Direction:</span> Visual content</p>
+                <p><span class="magnitude">Magnitude:</span> Pixel differences</p>
+                <p class="decision">✅ Use Cosine - Content similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Satellite Image Analysis</h5>
+                <p><span class="direction">Direction:</span> Geographic features</p>
+                <p><span class="magnitude">Magnitude:</span> Feature sizes, elevations</p>
+                <p class="decision">⚠️ Depends - Geographic context matters</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Product Image Matching</h5>
+                <p><span class="direction">Direction:</span> Product features</p>
+                <p><span class="magnitude">Magnitude:</span> Image quality, lighting</p>
+                <p class="decision">✅ Use Cosine - Product similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Gesture Recognition</h5>
+                <p><span class="direction">Direction:</span> Gesture patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Movement intensity</p>
+                <p class="decision">✅ Use Cosine - Gesture classification</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Image Quality Assessment</h5>
+                <p><span class="direction">Direction:</span> Quality patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Actual quality scores</p>
+                <p class="decision">❌ Don't Use - Quality scores matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Visual Search</h5>
+                <p><span class="direction">Direction:</span> Visual features and concepts</p>
+                <p><span class="magnitude">Magnitude:</span> Feature strengths</p>
+                <p class="decision">✅ Use Cosine - Visual similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Emotion Recognition</h5>
+                <p><span class="direction">Direction:</span> Emotional expressions</p>
+                <p><span class="magnitude">Magnitude:</span> Expression intensity</p>
+                <p class="decision">✅ Use Cosine - Expression similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Logo Detection</h5>
+                <p><span class="direction">Direction:</span> Logo features and shapes</p>
+                <p><span class="magnitude">Magnitude:</span> Feature clarity</p>
+                <p class="decision">✅ Use Cosine - Logo matching</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Image Contrast Analysis</h5>
+                <p><span class="direction">Direction:</span> Contrast patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Actual contrast values</p>
+                <p class="decision">❌ Don't Use - Contrast values matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Architecture Recognition</h5>
+                <p><span class="direction">Direction:</span> Architectural styles</p>
+                <p><span class="magnitude">Magnitude:</span> Building sizes</p>
+                <p class="decision">✅ Use Cosine - Style classification</p>
+            </div>
+
+            <div class="example-card">
+                <h5>OCR Post-Processing</h5>
+                <p><span class="direction">Direction:</span> Character patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Character clarity</p>
+                <p class="decision">✅ Use Cosine - Character similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Image Captioning</h5>
+                <p><span class="direction">Direction:</span> Visual concepts</p>
+                <p><span class="magnitude">Magnitude:</span> Object sizes, prominence</p>
+                <p class="decision">✅ Use Cosine - Concept similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Medical Diagnosis</h5>
+                <p><span class="direction">Direction:</span> Diagnostic patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Symptom severity</p>
+                <p class="decision">⚠️ Critical - Medical significance varies</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Video Frame Similarity</h5>
+                <p><span class="direction">Direction:</span> Frame content</p>
+                <p><span class="magnitude">Magnitude:</span> Motion intensity</p>
+                <p class="decision">✅ Use Cosine - Content similarity</p>
+            </div>
+        </div>
+
+        <div class="section-break"></div>
+
+        <!-- User Behavior & Recommendations -->
+        <h2>User Behavior & Recommendations</h2>
+
+        <div class="example-grid">
+            <div class="example-card">
+                <h5>Movie Recommendations</h5>
+                <p><span class="direction">Direction:</span> Genre preferences, themes</p>
+                <p><span class="magnitude">Magnitude:</span> Rating values, watch time</p>
+                <p class="decision">✅ Use Cosine - Preference similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Shopping Behavior</h5>
+                <p><span class="direction">Direction:</span> Product categories, brand preferences</p>
+                <p><span class="magnitude">Magnitude:</span> Purchase amounts, frequency</p>
+                <p class="decision">✅ Use Cosine - Preference patterns</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Music Recommendations</h5>
+                <p><span class="direction">Direction:</span> Musical genres, artists</p>
+                <p><span class="magnitude">Magnitude:</span> Play counts, time listened</p>
+                <p class="decision">✅ Use Cosine - Musical taste</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Purchase Amount Analysis</h5>
+                <p><span class="direction">Direction:</span> Product types</p>
+                <p><span class="magnitude">Magnitude:</span> Actual dollar amounts</p>
+                <p class="decision">❌ Don't Use - Amounts matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Social Media Interests</h5>
+                <p><span class="direction">Direction:</span> Interest categories</p>
+                <p><span class="magnitude">Magnitude:</span> Engagement levels</p>
+                <p class="decision">✅ Use Cosine - Interest similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Learning Path Recommendations</h5>
+                <p><span class="direction">Direction:</span> Subject interests, skills</p>
+                <p><span class="magnitude">Magnitude:</span> Completion rates, scores</p>
+                <p class="decision">✅ Use Cosine - Learning preferences</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Job Matching</h5>
+                <p><span class="direction">Direction:</span> Skills, industries</p>
+                <p><span class="magnitude">Magnitude:</span> Salary expectations</p>
+                <p class="decision">⚠️ Hybrid - Cosine for skills, exact for salary</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Dating App Matching</h5>
+                <p><span class="direction">Direction:</span> Interests, values</p>
+                <p><span class="magnitude">Magnitude:</span> Activity levels</p>
+                <p class="decision">✅ Use Cosine - Compatibility</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Travel Recommendations</h5>
+                <p><span class="direction">Direction:</span> Destination types, activities</p>
+                <p><span class="magnitude">Magnitude:</span> Budget ranges</p>
+                <p class="decision">⚠️ Hybrid - Cosine for preferences, exact for budget</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Gaming Preferences</h5>
+                <p><span class="direction">Direction:</span> Game genres, mechanics</p>
+                <p><span class="magnitude">Magnitude:</span> Hours played</p>
+                <p class="decision">✅ Use Cosine - Gaming taste</p>
+            </div>
+
+            <div class="example-card">
+                <h5>News Personalization</h5>
+                <p><span class="direction">Direction:</span> Topic interests</p>
+                <p><span class="magnitude">Magnitude:</span> Reading time</p>
+                <p class="decision">✅ Use Cosine - Topic preferences</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Fitness App Recommendations</h5>
+                <p><span class="direction">Direction:</span> Exercise types, goals</p>
+                <p><span class="magnitude">Magnitude:</span> Workout intensity</p>
+                <p class="decision">✅ Use Cosine - Fitness preferences</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Food Delivery Preferences</h5>
+                <p><span class="direction">Direction:</span> Cuisine types, dietary preferences</p>
+                <p><span class="magnitude">Magnitude:</span> Order frequency, amounts</p>
+                <p class="decision">✅ Use Cosine - Food preferences</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Investment Behavior</h5>
+                <p><span class="direction">Direction:</span> Investment categories, risk profile</p>
+                <p><span class="magnitude">Magnitude:</span> Investment amounts</p>
+                <p class="decision">⚠️ Hybrid - Category similarity, amount-specific advice</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Book Recommendations</h5>
+                <p><span class="direction">Direction:</span> Genres, authors, themes</p>
+                <p><span class="magnitude">Magnitude:</span> Reading speed, ratings</p>
+                <p class="decision">✅ Use Cosine - Reading preferences</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Subscription Service Matching</h5>
+                <p><span class="direction">Direction:</span> Service types, features</p>
+                <p><span class="magnitude">Magnitude:</span> Price sensitivity</p>
+                <p class="decision">⚠️ Hybrid - Feature similarity, price exact</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Social Network Analysis</h5>
+                <p><span class="direction">Direction:</span> Connection types, interests</p>
+                <p><span class="magnitude">Magnitude:</span> Interaction frequency</p>
+                <p class="decision">✅ Use Cosine - Social similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>App Usage Patterns</h5>
+                <p><span class="direction">Direction:</span> App categories, purposes</p>
+                <p><span class="magnitude">Magnitude:</span> Usage time</p>
+                <p class="decision">✅ Use Cosine - Usage patterns</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Customer Segmentation</h5>
+                <p><span class="direction">Direction:</span> Behavior patterns, preferences</p>
+                <p><span class="magnitude">Magnitude:</span> Purchase values</p>
+                <p class="decision">✅ Use Cosine - Behavioral similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Course Recommendations</h5>
+                <p><span class="direction">Direction:</span> Subject areas, skills</p>
+                <p><span class="magnitude">Magnitude:</span> Course difficulty, duration</p>
+                <p class="decision">✅ Use Cosine - Subject interests</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Event Recommendations</h5>
+                <p><span class="direction">Direction:</span> Event types, interests</p>
+                <p><span class="magnitude">Magnitude:</span> Attendance frequency</p>
+                <p class="decision">✅ Use Cosine - Event preferences</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Brand Affinity Analysis</h5>
+                <p><span class="direction">Direction:</span> Brand values, categories</p>
+                <p><span class="magnitude">Magnitude:</span> Loyalty scores</p>
+                <p class="decision">✅ Use Cosine - Brand similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Search Query Analysis</h5>
+                <p><span class="direction">Direction:</span> Search intent, topics</p>
+                <p><span class="magnitude">Magnitude:</span> Query frequency</p>
+                <p class="decision">✅ Use Cosine - Intent similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Spending Pattern Analysis</h5>
+                <p><span class="direction">Direction:</span> Spending categories</p>
+                <p><span class="magnitude">Magnitude:</span> Actual amounts spent</p>
+                <p class="decision">❌ Don't Use - Amounts are meaningful</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Skill Matching</h5>
+                <p><span class="direction">Direction:</span> Skill types, domains</p>
+                <p><span class="magnitude">Magnitude:</span> Proficiency levels</p>
+                <p class="decision">⚠️ Hybrid - Type similarity, level-specific matching</p>
+            </div>
+        </div>
+
+        <div class="section-break"></div>
+
+        <!-- Financial & Business Data -->
+        <h2>Financial & Business Data</h2>
+
+        <div class="example-grid">
+            <div class="example-card">
+                <h5>Stock Price Movements</h5>
+                <p><span class="direction">Direction:</span> Price trends, patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Actual price values</p>
+                <p class="decision">❌ Don't Use - Price values matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Company Industry Classification</h5>
+                <p><span class="direction">Direction:</span> Business sectors, activities</p>
+                <p><span class="magnitude">Magnitude:</span> Company size, revenue</p>
+                <p class="decision">✅ Use Cosine - Industry similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Credit Risk Patterns</h5>
+                <p><span class="direction">Direction:</span> Risk factors, patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Risk scores, amounts</p>
+                <p class="decision">⚠️ Critical - Both pattern and amount matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Business Model Similarity</h5>
+                <p><span class="direction">Direction:</span> Revenue models, strategies</p>
+                <p><span class="magnitude">Magnitude:</span> Revenue scale</p>
+                <p class="decision">✅ Use Cosine - Model similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Market Trend Analysis</h5>
+                <p><span class="direction">Direction:</span> Trend patterns, directions</p>
+                <p><span class="magnitude">Magnitude:</span> Trend magnitude</p>
+                <p class="decision">⚠️ Depends - Pattern vs amplitude</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Financial Product Matching</h5>
+                <p><span class="direction">Direction:</span> Product features, types</p>
+                <p><span class="magnitude">Magnitude:</span> Interest rates, fees</p>
+                <p class="decision">⚠️ Hybrid - Feature similarity, rate-specific</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Trading Strategy Similarity</h5>
+                <p><span class="direction">Direction:</span> Strategy types, approaches</p>
+                <p><span class="magnitude">Magnitude:</span> Return percentages</p>
+                <p class="decision">✅ Use Cosine - Strategy patterns</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Expense Category Analysis</h5>
+                <p><span class="direction">Direction:</span> Expense types, categories</p>
+                <p><span class="magnitude">Magnitude:</span> Actual expense amounts</p>
+                <p class="decision">❌ Don't Use - Amounts matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Customer Lifetime Value</h5>
+                <p><span class="direction">Direction:</span> Value drivers, behaviors</p>
+                <p><span class="magnitude">Magnitude:</span> Actual CLV amounts</p>
+                <p class="decision">❌ Don't Use - Values are critical</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Economic Indicator Patterns</h5>
+                <p><span class="direction">Direction:</span> Economic trends, cycles</p>
+                <p><span class="magnitude">Magnitude:</span> Indicator values</p>
+                <p class="decision">⚠️ Depends - Economic context matters</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Fraud Detection Patterns</h5>
+                <p><span class="direction">Direction:</span> Fraud patterns, types</p>
+                <p><span class="magnitude">Magnitude:</span> Transaction amounts</p>
+                <p class="decision">⚠️ Hybrid - Pattern + amount analysis</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Budget Allocation Patterns</h5>
+                <p><span class="direction">Direction:</span> Allocation strategies</p>
+                <p><span class="magnitude">Magnitude:</span> Budget amounts</p>
+                <p class="decision">✅ Use Cosine - Strategy similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Revenue Stream Analysis</h5>
+                <p><span class="direction">Direction:</span> Revenue types, sources</p>
+                <p><span class="magnitude">Magnitude:</span> Revenue amounts</p>
+                <p class="decision">⚠️ Hybrid - Type similarity, amount analysis</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Investment Portfolio Similarity</h5>
+                <p><span class="direction">Direction:</span> Asset types, strategies</p>
+                <p><span class="magnitude">Magnitude:</span> Portfolio values</p>
+                <p class="decision">✅ Use Cosine - Strategy similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Currency Exchange Patterns</h5>
+                <p><span class="direction">Direction:</span> Exchange trends</p>
+                <p><span class="magnitude">Magnitude:</span> Exchange rates</p>
+                <p class="decision">❌ Don't Use - Rates are values</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Business Metrics Correlation</h5>
+                <p><span class="direction">Direction:</span> Metric relationships</p>
+                <p><span class="magnitude">Magnitude:</span> Metric values</p>
+                <p class="decision">⚠️ Depends - Context determines approach</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Supply Chain Patterns</h5>
+                <p><span class="direction">Direction:</span> Supply chain structures</p>
+                <p><span class="magnitude">Magnitude:</span> Volumes, costs</p>
+                <p class="decision">✅ Use Cosine - Structure similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Competitive Analysis</h5>
+                <p><span class="direction">Direction:</span> Business strategies</p>
+                <p><span class="magnitude">Magnitude:</span> Market share, performance</p>
+                <p class="decision">✅ Use Cosine - Strategy similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Performance Benchmarking</h5>
+                <p><span class="direction">Direction:</span> Performance patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Performance scores</p>
+                <p class="decision">❌ Don't Use - Scores matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Market Segmentation</h5>
+                <p><span class="direction">Direction:</span> Segment characteristics</p>
+                <p><span class="magnitude">Magnitude:</span> Segment sizes</p>
+                <p class="decision">✅ Use Cosine - Characteristic similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Risk Assessment Models</h5>
+                <p><span class="direction">Direction:</span> Risk factors, types</p>
+                <p><span class="magnitude">Magnitude:</span> Risk levels, scores</p>
+                <p class="decision">⚠️ Critical - Both matter for decisions</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Pricing Strategy Analysis</h5>
+                <p><span class="direction">Direction:</span> Pricing models, approaches</p>
+                <p><span class="magnitude">Magnitude:</span> Actual prices</p>
+                <p class="decision">✅ Use Cosine - Strategy similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Cash Flow Patterns</h5>
+                <p><span class="direction">Direction:</span> Flow patterns, timing</p>
+                <p><span class="magnitude">Magnitude:</span> Cash amounts</p>
+                <p class="decision">⚠️ Hybrid - Pattern + amount analysis</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Merger & Acquisition Analysis</h5>
+                <p><span class="direction">Direction:</span> Strategic fit, synergies</p>
+                <p><span class="magnitude">Magnitude:</span> Deal values</p>
+                <p class="decision">✅ Use Cosine - Strategic similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Financial Health Indicators</h5>
+                <p><span class="direction">Direction:</span> Health patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Ratio values</p>
+                <p class="decision">❌ Don't Use - Ratios are meaningful</p>
+            </div>
+        </div>
+
+        <div class="section-break"></div>
+
+        <!-- Audio & Time Series -->
+        <h2>Audio & Time Series Examples</h2>
+
+        <div class="example-grid">
+            <div class="example-card">
+                <h5>Music Genre Classification</h5>
+                <p><span class="direction">Direction:</span> Musical characteristics, style</p>
+                <p><span class="magnitude">Magnitude:</span> Volume, intensity</p>
+                <p class="decision">✅ Use Cosine - Genre similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Speech Recognition</h5>
+                <p><span class="direction">Direction:</span> Phonetic patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Volume levels</p>
+                <p class="decision">✅ Use Cosine - Pattern recognition</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Audio Volume Comparison</h5>
+                <p><span class="direction">Direction:</span> Audio content</p>
+                <p><span class="magnitude">Magnitude:</span> Decibel levels</p>
+                <p class="decision">❌ Don't Use - Volume levels matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Time Series Trend Analysis</h5>
+                <p><span class="direction">Direction:</span> Trend patterns, shapes</p>
+                <p><span class="magnitude">Magnitude:</span> Actual values</p>
+                <p class="decision">✅ Use Cosine - Pattern similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Sensor Data Classification</h5>
+                <p><span class="direction">Direction:</span> Signal patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Signal strength</p>
+                <p class="decision">✅ Use Cosine - Pattern classification</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Temperature Measurement</h5>
+                <p><span class="direction">Direction:</span> Temperature trends</p>
+                <p><span class="magnitude">Magnitude:</span> Actual temperature values</p>
+                <p class="decision">❌ Don't Use - Temperature values matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Heart Rate Pattern Analysis</h5>
+                <p><span class="direction">Direction:</span> Rhythm patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Heart rate values</p>
+                <p class="decision">⚠️ Medical - Both pattern and values critical</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Stock Price Trends</h5>
+                <p><span class="direction">Direction:</span> Price movement patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Price values</p>
+                <p class="decision">⚠️ Depends - Pattern vs value analysis</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Voice Emotion Detection</h5>
+                <p><span class="direction">Direction:</span> Emotional patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Emotion intensity</p>
+                <p class="decision">✅ Use Cosine - Emotion classification</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Earthquake Detection</h5>
+                <p><span class="direction">Direction:</span> Seismic patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Earthquake magnitude</p>
+                <p class="decision">❌ Don't Use - Magnitude is critical</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Network Traffic Patterns</h5>
+                <p><span class="direction">Direction:</span> Traffic patterns, types</p>
+                <p><span class="magnitude">Magnitude:</span> Bandwidth usage</p>
+                <p class="decision">✅ Use Cosine - Pattern analysis</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Weather Pattern Recognition</h5>
+                <p><span class="direction">Direction:</span> Weather patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Measurement values</p>
+                <p class="decision">⚠️ Depends - Context determines approach</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Sleep Pattern Analysis</h5>
+                <p><span class="direction">Direction:</span> Sleep stage patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Sleep duration</p>
+                <p class="decision">✅ Use Cosine - Pattern similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Industrial Process Monitoring</h5>
+                <p><span class="direction">Direction:</span> Process patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Process values</p>
+                <p class="decision">⚠️ Industrial - Safety-critical values</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Music Recommendation</h5>
+                <p><span class="direction">Direction:</span> Musical features, style</p>
+                <p><span class="magnitude">Magnitude:</span> Play frequency</p>
+                <p class="decision">✅ Use Cosine - Musical similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Audio Fingerprinting</h5>
+                <p><span class="direction">Direction:</span> Audio characteristics</p>
+                <p><span class="magnitude">Magnitude:</span> Feature strengths</p>
+                <p class="decision">✅ Use Cosine - Audio matching</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Activity Recognition</h5>
+                <p><span class="direction">Direction:</span> Activity patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Movement intensity</p>
+                <p class="decision">✅ Use Cosine - Activity classification</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Energy Consumption Patterns</h5>
+                <p><span class="direction">Direction:</span> Usage patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Consumption amounts</p>
+                <p class="decision">⚠️ Hybrid - Pattern + consumption analysis</p>
+            </div>
+
+            <div class="example-card">
+                <h5>EEG Signal Analysis</h5>
+                <p><span class="direction">Direction:</span> Brain wave patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Signal amplitude</p>
+                <p class="decision">⚠️ Medical - Both pattern and amplitude matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Vibration Analysis</h5>
+                <p><span class="direction">Direction:</span> Vibration patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Vibration intensity</p>
+                <p class="decision">⚠️ Industrial - Intensity levels critical</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Audio Quality Assessment</h5>
+                <p><span class="direction">Direction:</span> Quality patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Quality scores</p>
+                <p class="decision">❌ Don't Use - Quality scores matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Biometric Authentication</h5>
+                <p><span class="direction">Direction:</span> Biometric patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Signal strength</p>
+                <p class="decision">✅ Use Cosine - Identity patterns</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Anomaly Detection</h5>
+                <p><span class="direction">Direction:</span> Anomaly patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Deviation amounts</p>
+                <p class="decision">⚠️ Depends - Both pattern and magnitude</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Signal Processing</h5>
+                <p><span class="direction">Direction:</span> Signal characteristics</p>
+                <p><span class="magnitude">Magnitude:</span> Signal amplitude</p>
+                <p class="decision">⚠️ Engineering - Context dependent</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Predictive Maintenance</h5>
+                <p><span class="direction">Direction:</span> Degradation patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Wear levels</p>
+                <p class="decision">⚠️ Critical - Both patterns and levels</p>
+            </div>
+        </div>
+
+        <div class="section-break"></div>
+
+        <!-- E-commerce & Product Data -->
+        <h2>E-commerce & Product Data</h2>
+
+        <div class="example-grid">
+            <div class="example-card">
+                <h5>Product Categorization</h5>
+                <p><span class="direction">Direction:</span> Product types, features</p>
+                <p><span class="magnitude">Magnitude:</span> Price, popularity</p>
+                <p class="decision">✅ Use Cosine - Product similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Price Comparison</h5>
+                <p><span class="direction">Direction:</span> Product types</p>
+                <p><span class="magnitude">Magnitude:</span> Actual prices</p>
+                <p class="decision">❌ Don't Use - Prices matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Review Sentiment Analysis</h5>
+                <p><span class="direction">Direction:</span> Sentiment patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Review length, rating</p>
+                <p class="decision">✅ Use Cosine - Sentiment similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Cross-selling Recommendations</h5>
+                <p><span class="direction">Direction:</span> Product relationships</p>
+                <p><span class="magnitude">Magnitude:</span> Purchase frequency</p>
+                <p class="decision">✅ Use Cosine - Product affinity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Inventory Management</h5>
+                <p><span class="direction">Direction:</span> Product categories</p>
+                <p><span class="magnitude">Magnitude:</span> Stock levels</p>
+                <p class="decision">❌ Don't Use - Stock levels critical</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Brand Similarity</h5>
+                <p><span class="direction">Direction:</span> Brand characteristics</p>
+                <p><span class="magnitude">Magnitude:</span> Market share</p>
+                <p class="decision">✅ Use Cosine - Brand positioning</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Search Result Ranking</h5>
+                <p><span class="direction">Direction:</span> Relevance patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Popularity scores</p>
+                <p class="decision">✅ Use Cosine - Relevance similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Product Bundle Analysis</h5>
+                <p><span class="direction">Direction:</span> Bundle composition</p>
+                <p><span class="magnitude">Magnitude:</span> Bundle value</p>
+                <p class="decision">✅ Use Cosine - Composition similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Customer Segmentation</h5>
+                <p><span class="direction">Direction:</span> Purchase patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Purchase amounts</p>
+                <p class="decision">✅ Use Cosine - Behavioral patterns</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Seasonal Trend Analysis</h5>
+                <p><span class="direction">Direction:</span> Seasonal patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Sales volumes</p>
+                <p class="decision">✅ Use Cosine - Pattern similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Return Pattern Analysis</h5>
+                <p><span class="direction">Direction:</span> Return reasons, patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Return rates</p>
+                <p class="decision">✅ Use Cosine - Pattern analysis</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Supplier Performance</h5>
+                <p><span class="direction">Direction:</span> Performance patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Performance scores</p>
+                <p class="decision">❌ Don't Use - Scores are meaningful</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Market Basket Analysis</h5>
+                <p><span class="direction">Direction:</span> Product associations</p>
+                <p><span class="magnitude">Magnitude:</span> Support, confidence</p>
+                <p class="decision">✅ Use Cosine - Association patterns</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Competitive Pricing</h5>
+                <p><span class="direction">Direction:</span> Pricing strategies</p>
+                <p><span class="magnitude">Magnitude:</span> Actual prices</p>
+                <p class="decision">⚠️ Hybrid - Strategy similarity, price exact</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Product Feature Matching</h5>
+                <p><span class="direction">Direction:</span> Feature types, categories</p>
+                <p><span class="magnitude">Magnitude:</span> Feature values</p>
+                <p class="decision">✅ Use Cosine - Feature similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Conversion Rate Analysis</h5>
+                <p><span class="direction">Direction:</span> Conversion patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Conversion rates</p>
+                <p class="decision">❌ Don't Use - Rates are critical</p>
+            </div>
+
+            <div class="example-card">
+                <h5>User Journey Analysis</h5>
+                <p><span class="direction">Direction:</span> Journey patterns, paths</p>
+                <p><span class="magnitude">Magnitude:</span> Time spent, clicks</p>
+                <p class="decision">✅ Use Cosine - Journey similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Promotion Effectiveness</h5>
+                <p><span class="direction">Direction:</span> Promotion types</p>
+                <p><span class="magnitude">Magnitude:</span> Effectiveness scores</p>
+                <p class="decision">❌ Don't Use - Effectiveness matters</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Product Lifecycle Analysis</h5>
+                <p><span class="direction">Direction:</span> Lifecycle patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Sales volumes</p>
+                <p class="decision">✅ Use Cosine - Lifecycle similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Logistics Optimization</h5>
+                <p><span class="direction">Direction:</span> Route patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Distances, costs</p>
+                <p class="decision">❌ Don't Use - Distances/costs matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Quality Control</h5>
+                <p><span class="direction">Direction:</span> Defect patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Defect rates</p>
+                <p class="decision">❌ Don't Use - Rates are critical</p>
+            </div>
+
+            <div class="example-card">
+                <h5>A/B Test Analysis</h5>
+                <p><span class="direction">Direction:</span> Test patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Test results, lift</p>
+                <p class="decision">❌ Don't Use - Results matter</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Personalization Engines</h5>
+                <p><span class="direction">Direction:</span> Preference patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Interaction frequency</p>
+                <p class="decision">✅ Use Cosine - Preference similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Content Similarity</h5>
+                <p><span class="direction">Direction:</span> Content themes, topics</p>
+                <p><span class="magnitude">Magnitude:</span> Content length</p>
+                <p class="decision">✅ Use Cosine - Topic similarity</p>
+            </div>
+
+            <div class="example-card">
+                <h5>Fraud Detection</h5>
+                <p><span class="direction">Direction:</span> Fraud patterns</p>
+                <p><span class="magnitude">Magnitude:</span> Transaction amounts</p>
+                <p class="decision">⚠️ Security - Both pattern and amount</p>
+            </div>
+        </div>
+
+        <div class="page-break"></div>
+
+        <!-- Quick Reference Cheat Sheet -->
+        <h2>Quick Reference Cheat Sheet</h2>
+
+        <div class="cheat-sheet">
+            <h3>When to Use Cosine Similarity</h3>
+            <div class="quick-ref">
+                <div class="ref-item">
+                    <strong>Text Analysis:</strong> Topics, sentiment direction, writing style, semantic search
+                </div>
+                <div class="ref-item">
+                    <strong>Recommendations:</strong> User preferences, content similarity, product matching
+                </div>
+                <div class="ref-item">
+                    <strong>Search & Discovery:</strong> Semantic similarity, document matching, visual search
+                </div>
+                <div class="ref-item">
+                    <strong>Classification:</strong> Pattern recognition, category similarity, intent detection
+                </div>
+                <div class="ref-item">
+                    <strong>Embeddings:</strong> Word vectors, image features, user behavior vectors
+                </div>
+                <div class="ref-item">
+                    <strong>Clustering:</strong> Conceptual grouping, topic modeling, customer segmentation
+                </div>
+                <div class="ref-item">
+                    <strong>Social Analysis:</strong> User similarity, content affinity, network analysis
+                </div>
+                <div class="ref-item">
+                    <strong>Creative AI:</strong> Style transfer, genre classification, artistic similarity
+                </div>
+            </div>
+
+            <h3>When NOT to Use Cosine Similarity</h3>
+            <div class="quick-ref">
+                <div class="ref-item">
+                    <strong>Financial Values:</strong> Stock prices, revenues, costs, budgets, salaries
+                </div>
+                <div class="ref-item">
+                    <strong>Physical Measurements:</strong> Temperatures, distances, weights, speeds
+                </div>
+                <div class="ref-item">
+                    <strong>Quality Scores:</strong> Performance ratings, quality metrics, test scores
+                </div>
+                <div class="ref-item">
+                    <strong>Exact Quantities:</strong> Inventory levels, population counts, precise amounts
+                </div>
+                <div class="ref-item">
+                    <strong>Critical Thresholds:</strong> Safety limits, medical values, compliance levels
+                </div>
+                <div class="ref-item">
+                    <strong>Image Properties:</strong> Brightness, contrast, resolution, color intensity
+                </div>
+                <div class="ref-item">
+                    <strong>Time-Sensitive Values:</strong> Real-time prices, urgent quantities, deadlines
+                </div>
+                <div class="ref-item">
+                    <strong>Rate Comparisons:</strong> Conversion rates, success rates, error rates
+                </div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <h4>Critical Decision Point</h4>
+            <p>Always ask: <strong>"Does the magnitude represent meaningful information that shouldn't be normalized
+                    away?"</strong></p>
+            <p>If yes → Use Euclidean distance or other magnitude-preserving metrics</p>
+            <p>If no → Use cosine similarity for directional/conceptual comparison</p>
+        </div>
+
+        <div class="mental-model">
+            <h3>The Ultimate Decision Framework</h3>
+            <div class="example-grid">
+                <div class="concept-box">
+                    <h4>Use Cosine Similarity When:</h4>
+                    <ul>
+                        <li>Comparing concepts, not quantities</li>
+                        <li>Looking for patterns and relationships</li>
+                        <li>Building recommendation systems</li>
+                        <li>Performing semantic analysis</li>
+                        <li>Magnitude differences are irrelevant</li>
+                        <li>Focus is on "what type" not "how much"</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Use Other Metrics When:</h4>
+                    <ul>
+                        <li>Exact values matter for decisions</li>
+                        <li>Comparing quantities or measurements</li>
+                        <li>Safety or compliance thresholds exist</li>
+                        <li>Financial amounts are critical</li>
+                        <li>Scale represents important information</li>
+                        <li>Precision is more important than patterns</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-box">
+            <div class="stats-number">150+</div>
+            <div class="stats-label">Real-world examples to guide your decisions</div>
+        </div>
+
+        <div class="mental-model">
+            <h3>About This Guide</h3>
+            <p>This comprehensive guide provides 150+ practical examples to help you make informed decisions about when
+                to use cosine similarity versus other distance metrics. Each example includes clear direction vs
+                magnitude analysis and specific recommendations.</p>
+
+            <p><strong>Created by Samuel Umoren</strong> - AI Engineer building practical AI systems. Find more
+                resources at <strong>sammai.bearblog.dev</strong></p>
+        </div>
+    </div>
+
+    <script>
+
+        // Add smooth scrolling for better UX
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        async function downloadPDF() {
+            const button = document.querySelector('.download-button');
+            const originalText = button.textContent;
+
+            button.textContent = '⏳ Generating PDF...';
+            button.disabled = true;
+
+            try {
+                const baseUrl = window.location.origin;
+                const response = await fetch(`${baseUrl}/generate-pdf`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('PDF generation failed');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'cosine-similarity-guide.pdf';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                button.textContent = originalText;
+                button.disabled = false;
+            } catch (error) {
+                console.error('PDF generation failed:', error);
+                button.textContent = '❌ PDF Failed';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }, 3000);
+            }
+        }
+    </script>
+</body>
+
+</html>
